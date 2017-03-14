@@ -1,0 +1,37 @@
+{
+  "name": "ecobot",
+  "version": "0.0.1",
+  "scripts": {
+    "start": "node app.js",
+    "serve": "nodemon app.js"
+  },
+  "engines": {
+    "node": "6.8.0"
+  },
+  "dependencies": {
+    "async": "^2.1.5",
+    "bluebird": "^3.4.7",
+    "body-parser": "~1.15.2",
+    "compression": "^1.6.2",
+    "debug": "~2.2.0",
+    "envalid": "^2.4.2",
+    "excel": "^0.1.7",
+    "express": "^4.14.0",
+    "moment": "^2.17.1",
+    "mongoose": "^4.7.5",
+    "point-in-polygon": "^1.0.1",
+    "pug": "~2.0.0-beta6",
+    "request": "^2.79.0",
+    "scrape-it": "^3.3.0",
+    "serve-favicon": "~2.3.0"
+  },
+  "devDependencies": {
+    "eslint": "^3.15.0",
+    "eslint-config-standard": "^6.2.1",
+    "eslint-plugin-promise": "^3.4.1",
+    "eslint-plugin-standard": "^2.0.1",
+    "gulp": "^3.9.1",
+    "gulp-json-editor": "^2.2.1",
+    "nodemon": "^1.11.0"
+  }
+}
