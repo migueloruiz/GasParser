@@ -1,5 +1,6 @@
 const gulp = require('gulp');
 const http = require('http');
+const https = require('https');
 const fs = require('fs');
 const parseXlsx = require('excel');
 const scrapeIt = require("scrape-it");
@@ -8,7 +9,79 @@ const async = require('async');
 var inside = require('point-in-polygon');
 var jeditor = require('gulp-json-editor');
 
+var xml2js = require('xml2js');
+var parser = new xml2js.Parser();
 
+
+gulp.task('setgas', function(callback) {
+
+  async.auto({
+    getjson: cb => {
+      var data = '';
+      https.get('https://datos.gob.mx/api/gasolina/prices.xml', function(res) {
+        if (res.statusCode >= 200 && res.statusCode < 400) {
+          res.on('data', function(data_) { data += data_.toString(); });
+          res.on('end', function() {
+            parser.parseString(data, function(err, result) {
+              if (err) console.log('Got error: ' + err.message);
+              cb(null,gasPreicesJson(result))
+            });
+          });
+        }
+      });
+    }
+  }, (err, results) => {
+    if (err) console.error(err)
+    gulp.src("./src/private/gasPrices.json")
+      .pipe(jeditor(function(json) {
+        return results.getjson
+      }))
+      .pipe(gulp.dest("./src/private/"));
+  })
+
+});
+
+function gasPreicesJson(json) {
+  var tempJSON = {
+    places:[]
+  }
+  json.places.place.forEach((item) => {
+
+    let tempPrices = {
+      magna: 0,
+      premium: 0,
+      diesel: 0
+    }
+
+    if (item.hasOwnProperty('gas_price')) {
+      item['gas_price'].forEach((gasPrice) => {
+        switch (gasPrice.$.type) {
+          case 'regular':
+            tempPrices.magna = parseFloat(gasPrice._)
+            break;
+          case 'premium':
+            tempPrices.premium = parseFloat(gasPrice._)
+            break;
+          case 'diesel':
+            tempPrices.diesel = parseFloat(gasPrice._)
+            break;
+        }
+      })
+    }
+
+    tempJSON.places.push({
+      id: item.$.place_id,
+      prices: {
+        diesel: tempPrices.magna,
+        magna: tempPrices.premium,
+        premium: tempPrices.diesel,
+        timestamp: new Date().toISOString()
+      }
+    })
+  });
+
+  return tempJSON
+}
 
 gulp.task('json', function(callback) {
   gulp.src("./gasStatios.json")

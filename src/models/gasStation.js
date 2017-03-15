@@ -9,7 +9,7 @@ var GasStation = function () {
     satate: String,
     stationValid: Boolean,
     location: {
-      type: [Number],   // ``<longitude> , <latitude> ]
+      type: [Number],   // [<longitude> , <latitude> ]
       index: '2d'       // geospatial index
     },
     prices: {
