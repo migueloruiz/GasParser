@@ -28,10 +28,7 @@ envalid.cleanEnv(process.env, {
   // FB_APP_SECRET: str(),
   FB_PAGE_ID: str(),
   PAGE_ACCES_TOKEN: str(),
-  DB_URL : str(),
-  GOB_PRECIOS_URL: str(),
-  GOB_PLACES_URL: str(),
-  GOB_BLOG_URL: str()
+  DB_URL : str()
 })
 
 
