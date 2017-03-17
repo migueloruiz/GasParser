@@ -25,7 +25,7 @@ envalid.cleanEnv(process.env, {
   SERVER_URL: str(),
   VALIDATION_TOKEN: str(),
   FB_APP_ID: str(),
-  FB_APP_SECRET: str(),
+  // FB_APP_SECRET: str(),
   FB_PAGE_ID: str(),
   PAGE_ACCES_TOKEN: str(),
   DB_URL : str(),
@@ -44,6 +44,7 @@ var GasStation = mongoose.model('GasStation')
 // ==========================
 var index = require(path.join(__dirname, 'src/routes/index/index'))
 var gasStation = require(path.join(__dirname, 'src/routes/gasStation/gasStation'))
+var gasPrices = require(path.join(__dirname, 'src/routes/gasPrices/gasPrices'))
 // var webhook = require(path.join(__dirname, 'src/routes/webhook/webhook'))
 
 // Databease Setup
@@ -55,6 +56,8 @@ dbSetup.init()
 // ==========================
 
 var app = express()
+
+global.appRoot = path.resolve(__dirname);
 
 var port = process.env.PORT || 4000
 app.set('port', port)
@@ -75,7 +78,8 @@ server.on('listening', onListening)
 // Routes Setup
 // ==========================
 app.use('/', index)
-app.use('/gasStation',gasStation)
+app.use('/station',	gasStation)
+app.use('/prices',	gasPrices)
 // app.use('/webhook', webhook)
 
 // Event listener for HTTP server "error" event.

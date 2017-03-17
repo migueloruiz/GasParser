@@ -235,7 +235,7 @@ function prossesFile (results, cb) {
 
     // TODO: Actualizar la base de datos aqui
 
-    fs.writeFile('./src/public/gas.json',JSON.stringify(gasData) , function(err){
+    fs.writeFile('./src/private/gas.json',JSON.stringify(gasData) , function(err){
       if(err) throw err
       console.log('Json Generado')
       cb(null, null)

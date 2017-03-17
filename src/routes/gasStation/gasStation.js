@@ -9,8 +9,6 @@ router.get('/', function (req, res, next) {
   let userLong = parseFloat(req.query.user_long)
   res.setHeader('Content-Type', 'application/json');
 
-
-  // TODO: Validador de Cordenadas
   if ( areCordinatesValid(userLong, userLat) ){
 
     let query = {
