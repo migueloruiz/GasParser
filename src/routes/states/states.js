@@ -15,9 +15,11 @@ router.get('/', function (req, res, next) {
     var prices = JSON.parse(fileData);
 
     try {
-      let keys = Object.keys(prices.estados);
+      let keys = _getKeys(prices.estados);
       res.status(200)
-      .send(JSON.stringify(keys))
+      .send(JSON.stringify({
+        estados: keys
+      }))
     } catch (err) {
       res.status(500)
       .send({error: `Error al buscar archivo`})
@@ -39,37 +41,12 @@ router.get('/:state', function (req, res, next) {
 
     var prices = JSON.parse(fileData);
     if (prices.estados.hasOwnProperty(state)) {
-      let keys = Object.keys(prices.estados[state]);
+      let keys = _getKeys(prices.estados[state])
+      let max = prices.estados[state]['MAXIMO']
       res.status(200)
-      .send(JSON.stringify(keys))
-    } else {
-      res.status(404)
-      .send({error: `Estado no valido: ${state}`})
-    }
-  });
-
-})
-
-router.get('/:state/:city', function (req, res, next) {
-  let state = req.params.state
-  let city = req.params.city
-  res.setHeader('Content-Type', 'application/json');
-
-  fs.readFile(appRoot + '/src/private/gas.json', 'utf8', function (err, fileData) {
-    if (err) {
-      res.status(500)
-      .send({error: `Error al buscar archivo`})
-    }
-
-    var prices = JSON.parse(fileData);
-    if (prices.estados.hasOwnProperty(state)) {
-      if (prices.estados[state].hasOwnProperty(city)) {
-        res.status(200)
-        .send(JSON.stringify(prices.estados[state][city]))
-      } else {
-        res.status(404)
-        .send({error: `Ciudad no valida: ${city}`})
-      }
+      .send(JSON.stringify({
+        ciudades: keys
+      }))
     } else {
       res.status(404)
       .send({error: `Estado no valido: ${state}`})
@@ -79,3 +56,11 @@ router.get('/:state/:city', function (req, res, next) {
 })
 
 module.exports = router
+
+function _getKeys (array) {
+  return Object.keys(array).sort((a, b) => {
+    if(a < b) return -1
+    if(a > b) return 1
+    return 0
+  });
+}

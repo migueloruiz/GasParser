@@ -43,8 +43,9 @@ var GasStation = mongoose.model('GasStation')
 // Routes
 // ==========================
 var index = require(path.join(__dirname, 'src/routes/index/index'))
-var gasStation = require(path.join(__dirname, 'src/routes/gasStation/gasStation'))
-var gasPrices = require(path.join(__dirname, 'src/routes/gasPrices/gasPrices'))
+var stations = require(path.join(__dirname, 'src/routes/stations/stations'))
+var prices = require(path.join(__dirname, 'src/routes/prices/prices'))
+var states = require(path.join(__dirname, 'src/routes/states/states'))
 // var webhook = require(path.join(__dirname, 'src/routes/webhook/webhook'))
 
 // Databease Setup
@@ -78,8 +79,9 @@ server.on('listening', onListening)
 // Routes Setup
 // ==========================
 app.use('/', index)
-app.use('/station',	gasStation)
-app.use('/prices',	gasPrices)
+app.use('/station',	stations)
+app.use('/prices',	prices)
+app.use('/states',	states)
 // app.use('/webhook', webhook)
 
 // Event listener for HTTP server "error" event.

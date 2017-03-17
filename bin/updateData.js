@@ -101,9 +101,6 @@ function prossesFile (results, cb) {
   parseXlsx(rootPath + '/src/private/gasolina.xlsx', function(err, data) {
     if(err) throw err
     var gasData = getCleanJson( data )
-
-    // TODO: Actualizar la base de datos aqui
-
     fs.writeFile(rootPath + '/src/private/gas.json',JSON.stringify(gasData) , function(err){
       if(err) throw err
       console.log('Json Generado')
@@ -115,7 +112,9 @@ function prossesFile (results, cb) {
 function getCleanJson( array ){
   var orderJson = { estados: {} }
   var lastState = '';
-  console.log(array[0][0])
+
+  orderJson.fecha = getDateFrom(array[0][0])
+
   for (var i = 3; i < array.length; i++) {
     if ( isValidRow( array[i] ) ){
       if (lastState !== array[i][2] && array[i][2] !== ''){
@@ -133,35 +132,44 @@ function getCleanJson( array ){
     }
   }
 
+  function getDateFrom (item) {
+    let rex = /(\d{1,2})\s?[Aa]?[Ll]?\s?(\d{1,2})?\s\w+\s(\w+)\s\w+?\s(\d{4})[.]?/ig
+    let match = rex.exec(item);
+
+    return (match[2]) ? `${match[1]} al ${match[2]} de ${capitalize(match[3])} del ${match[4]}` : `${match[1]} de ${capitalize(match[3])} del ${match[4]}`
+  }
+
+  function capitalize(s){
+    return s.toLowerCase().replace( /\b./g, function(a){ return a.toUpperCase(); } );
+  };
+
   // Se obtine el maximo
   // ========================
+  let estadosKeys = Object.keys(orderJson.estados)
+  estadosKeys.forEach((estado) => {
+    let municipiosKeys = Object.keys(orderJson.estados[estado])
+
+    var maxMagna = 0
+    var maxMagnaCity = ''
+    municipiosKeys.forEach((municipio) => {
+      if (parseFloat(orderJson.estados[estado][municipio].magna) > maxMagna) {
+        maxMagna = parseFloat(orderJson.estados[estado][municipio].magna)
+        maxMagnaCity = municipio
+      }
+    })
+
+    orderJson.estados[estado]['MAXIMO EN ESTADO'] = {
+      magna: parseFloat(orderJson.estados[estado][maxMagnaCity].magna),
+      premium: parseFloat(orderJson.estados[estado][maxMagnaCity].premium),
+      diesel: parseFloat(orderJson.estados[estado][maxMagnaCity].diesel)
+    }
+
+  })
+
+  // Sort
   // ========================
-  // ========================
-  // let estadosKeys = Object.keys(orderJson.estados)
-  // estadosKeys.forEach((estado) => {
-  //   let municipiosKeys = Object.keys(orderJson.estados[estado])
-  //
-  //   var maxMagna = 0
-  //   var maxMagnaCity = ''
-  //   municipiosKeys.forEach((municipio) => {
-  //     if (parseFloat(orderJson.estados[estado][municipio].magna) > maxMagna) {
-  //       maxMagna = parseFloat(orderJson.estados[estado][municipio].magna)
-  //       maxMagnaCity = municipio
-  //     }
-  //   })
-  //
-  //   orderJson.estados[estado].maximo = {
-  //     magna: parseFloat(orderJson.estados[estado][maxMagnaCity].magna),
-  //     premium: parseFloat(orderJson.estados[estado][maxMagnaCity].premium),
-  //     diesel: parseFloat(orderJson.estados[estado][maxMagnaCity].diesel)
-  //   }
-  //
-  // })
-  //
-  // orderJson.timestamp = new Date().toISOString();
-  // ========================
-  // ========================
-  // ========================
+
+  orderJson.timestamp = new Date().toISOString();
 
   return orderJson
 }
