@@ -12,6 +12,36 @@ var jeditor = require('gulp-json-editor');
 var xml2js = require('xml2js');
 var parser = new xml2js.Parser();
 
+gulp.task('jsontask', function(callback) {
+  return gulp.src("./gasios.json")
+    .pipe(jeditor(function(json) {
+      console.log("HOLAAAAA")
+
+      var newJson = {
+        estados: {}
+      }
+
+      let estadosKeys = Object.keys(json.estados).sort(function(a, b){
+          if(a < b) return -1;
+          if(a > b) return 1;
+          return 0;
+      })
+
+      console.log(estadosKeys.length)
+
+      estadosKeys.forEach((estado) => {
+        newJson.estados[estado] = Object.keys(json.estados[estado]).sort(function(a, b){
+            if(a < b) return -1;
+            if(a > b) return 1;
+            return 0;
+        })
+      })
+
+      return newJson
+    }))
+    .pipe(gulp.dest("./"));
+});
+
 
 gulp.task('setgas', function(callback) {
 

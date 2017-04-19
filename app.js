@@ -28,9 +28,8 @@ envalid.cleanEnv(process.env, {
   // FB_APP_SECRET: str(),
   FB_PAGE_ID: str(),
   PAGE_ACCES_TOKEN: str(),
-  DB_URL : str()
+  DB_URL: str()
 })
-
 
 // Models
 // ==========================
@@ -55,7 +54,7 @@ dbSetup.init()
 
 var app = express()
 
-global.appRoot = path.resolve(__dirname);
+global.appRoot = path.resolve(__dirname)
 
 var port = process.env.PORT || 4000
 app.set('port', port)
