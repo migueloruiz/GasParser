@@ -72,9 +72,17 @@ function processLocations (array) {
     let newItem = JSON.parse(JSON.stringify(item))
 
     newItem.location = {
-      lat: item.location[0],
-      long: item.location[1]
+      lat: item.location[0] + '',
+      long: item.location[1] + ''
     }
+
+    newItem.prices = {
+      diesel: item.prices.diesel + '',
+      timestamp: item.prices.timestamp + '',
+      magna: item.prices.magna + '',
+      premium: item.prices.premium + ''
+    }
+
     // console.log(newItem)
     return newItem
   })
