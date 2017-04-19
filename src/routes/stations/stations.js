@@ -30,7 +30,7 @@ router.get('/', function (req, res, next) {
     GasStation.find(query, excluedes)
     .limit(25)
     .exec((err, locationsData) => {
-      console.log('locationsData', locationsData)
+      // console.log('locationsData', locationsData)
       if (err) res.send(500, { error: err })
       res.send(200, processLocations(locationsData))
     })
@@ -69,11 +69,14 @@ function processLocations (array) {
       max.premium = item.prices.premium
     }
 
-    item.location = {
+    let newItem = JSON.parse(JSON.stringify(item))
+
+    newItem.location = {
       lat: item.location[0],
       long: item.location[1]
     }
-    return item
+    // console.log(newItem)
+    return newItem
   })
 
   return JSON.stringify({
