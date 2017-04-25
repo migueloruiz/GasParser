@@ -6,20 +6,24 @@ var router = express.Router()
 router.get('/', function (req, res, next) {
   let userLat = parseFloat(req.query.user_lat)
   let userLong = parseFloat(req.query.user_long)
+  let range = parseInt(req.query.range)
   res.setHeader('Content-Type', 'application/json')
 
   if (areCordinatesValid(userLong, userLat)) {
     let query = {
       'location': {
         '$near': [
-          -99.2047001, // userLong
-          19.4406926 // userLat
-        ]
+          userLong, // userLong
+          userLat // userLat
+        ],
+        $maxDistance: 0.020
       },
       'stationValid': {
         '$eq': true
       }
     }
+
+    query.location['$maxDistance'] = (!range.isNaN) ? range * 0.01 : 0.020
 
     let excluedes = {
       _id: 0,
@@ -28,11 +32,10 @@ router.get('/', function (req, res, next) {
     }
 
     GasStation.find(query, excluedes)
-    .limit(25)
     .exec((err, locationsData) => {
       // console.log('locationsData', locationsData)
       if (err) res.send(500, { error: err })
-      res.send(200, processLocations(locationsData))
+      res.send(200, processLocations(locationsData, [userLong, userLat]))
     })
   } else {
     console.log('404')
@@ -50,7 +53,7 @@ function areCordinatesValid (long, lat) {
   return notNull && notNaN && validLong && validLat
 }
 
-function processLocations (array) {
+function processLocations (array, userLoc) {
   // let jsonForReponse = {}
   let max = {
     magna: 0,
@@ -76,6 +79,8 @@ function processLocations (array) {
       long: item.location[0] + ''
     }
 
+    newItem.distance = getEarthDistance(item.location, userLoc)
+
     newItem.prices = {
       diesel: item.prices.diesel + '',
       timestamp: item.prices.timestamp + '',
@@ -89,8 +94,26 @@ function processLocations (array) {
 
   return JSON.stringify({
     maxPrices: max,
+    length: resposeArray.length,
     stations: resposeArray
   })
+}
+
+function getEarthDistance (a, b) {
+  const R = 6378 // 6371000  metros
+  let φ1 = toRad(a[1])
+  let φ2 = toRad(b[1])
+  let Δφ = toRad(b[1] - a[1])
+  let Δλ = toRad(b[0] - a[0])
+
+  let x = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
+  let y = 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x))
+
+  return (R * y).toFixed(3)
+}
+
+function toRad (value) {
+  return value * Math.PI / 180
 }
 
 module.exports = router
