@@ -79,8 +79,6 @@ function processLocations (array, userLoc) {
       long: item.location[0] + ''
     }
 
-    newItem.distance = getEarthDistance(item.location, userLoc)
-
     newItem.prices = {
       diesel: item.prices.diesel + '',
       timestamp: item.prices.timestamp + '',
