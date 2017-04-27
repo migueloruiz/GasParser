@@ -80,8 +80,8 @@ function processLocations (array, userLoc) {
     }
 
     newItem.prices = {
-      diesel: item.prices.diesel + '',
       timestamp: item.prices.timestamp + '',
+      diesel: item.prices.diesel + '',
       magna: item.prices.magna + '',
       premium: item.prices.premium + ''
     }
