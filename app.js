@@ -75,9 +75,9 @@ server.on('listening', onListening)
 // Routes Setup
 // ==========================
 app.use('/', index)
-app.use('/station',	stations)
-app.use('/prices',	prices)
-app.use('/states',	states)
+app.use('/station', stations)
+app.use('/prices', prices)
+app.use('/states', states)
 // app.use('/webhook', webhook)
 
 // Event listener for HTTP server "error" event.

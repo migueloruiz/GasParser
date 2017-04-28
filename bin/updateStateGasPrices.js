@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var fs = require('fs')
 var parseXlsx = require('excel')
 var scrapeIt = require('scrape-it')
@@ -15,7 +17,6 @@ function scrapXlsx () {
     prossesFile: ['getXlsxFile', (results, cb) => prossesFile(results, cb)]
   }, (err, results) => {
     if (err) console.error(err)
-    console.log('acabo')
   })
 };
 

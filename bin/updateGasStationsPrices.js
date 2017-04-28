@@ -1,81 +1,43 @@
+#!/usr/bin/env node
+
 var async = require('async')
 var mongoose = require('mongoose')
+var gasStationModel = require('../src/models/gasStation')()
 var GasStation = mongoose.model('GasStation')
-const fs = require('fs')
-var path = require('path')
 const https = require('https')
 var xml2js = require('xml2js')
 var parser = new xml2js.Parser()
 
-module.exports = {
-  init: function () {
-    conectDB()
-    // getGasStations()
-    // getUpdateGasPrices()
-  }
-}
-
-function conectDB () {
-  mongoose.connect(process.env.DB_URL, function (err) {
-    if (err) {
-      console.log('Error DB', err)
-      throw err
-    }
-    console.log('DB Ready')
-  })
-}
-
-function getGasStations () {
-  mongoose.connect(process.env.DB_URL, function (err) {
-    if (err) {
-      console.log('Error DB', err)
-      throw err
-    }
-
-    fs.readFile(path.join(__dirname, '../private/gasStatios.json'), 'utf8', function (err, data) {
-      if (err) throw err
-      let obj = JSON.parse(data)
-
-      GasStation.remove(() => {
-        async.each(obj, function (item, cb) {
-          var station = {
-            _id: parseInt(item.id),
-            name: item.name,
-            address: item.address,
-            satate: item.estado || '',
-            stationValid: item.status,
-            prices: {
-              diesel: 0,
-              magna: 0,
-              premium: 0,
-              timestamp: new Date().toISOString()
-            }
-          }
-
-          station.location = (item.status) ? [item.location.long, item.location.lat] : [0, 0]
-
-          GasStation.create(station, function (error, data) {
-            if (error) throw error
-            cb(error, null)
-          })
-        }, function (err) {
-          if (err) throw err
-        })
-      })
-    })
-  })
-}
+// Environment Variables
+// ==========================
+const envalid = require('envalid')
+const { str } = envalid
+console.log(`================= ${process.env.NODE_ENV} mode =================`)
+envalid.cleanEnv(process.env, {
+  PROJECT: str(),
+  SERVER_URL: str(),
+  VALIDATION_TOKEN: str(),
+  FB_APP_ID: str(),
+  // FB_APP_SECRET: str(),
+  FB_PAGE_ID: str(),
+  PAGE_ACCES_TOKEN: str(),
+  DB_URL: str()
+})
 
 function getUpdateGasPrices () {
+  console.log('Start getUpdateGasPrices')
   async.auto({
     getjson: cb => {
+      console.log('Download Prices.xml')
       var data = ''
       https.get('https://datos.gob.mx/api/gasolina/prices.xml', function (res) {
         if (res.statusCode >= 200 && res.statusCode < 400) {
           res.on('data', function (data_) { data += data_.toString() })
           res.on('end', function () {
+            console.log('Proseesing Prices.xml')
             parser.parseString(data, function (err, result) {
               if (err) console.log('Got error: ' + err.message)
+              console.log('Prices.json Generated')
               cb(null, result)
             })
           })
@@ -87,24 +49,36 @@ function getUpdateGasPrices () {
     }]
   }, (err, results) => {
     if (err) console.error(err)
+    console.log('Conecting DB')
     mongoose.connect(process.env.DB_URL, function (err) {
       if (err) {
         console.log('Error DB', err)
         throw err
       }
 
-      results.cleanJson.places.forEach((item) => {
+      console.log('Update Prices in DB')
+      async.forEachOf(results.cleanJson.places, (item, key, cb) => {
         GasStation.findByIdAndUpdate(item.id, {
           prices: item.prices
         }, (err, data) => {
-          if (err) console.log('error ', err)
+          if (err) {
+            console.log('error ', err)
+            cb(err)
+          }
+          cb()
         })
+      }, function (err) {
+        if (err) console.error(err.message)
+        console.log('Close Conection DB')
+        mongoose.connection.close()
       })
     })
   })
 }
 
 function gasPreicesJson (json) {
+  console.log('Proseesing Prices.json')
+
   var tempJSON = {
     places: []
   }
@@ -142,5 +116,10 @@ function gasPreicesJson (json) {
     })
   })
 
+  console.log('End Proseesing Prices.json')
   return tempJSON
 }
+
+// Run
+// =================
+getUpdateGasPrices()
